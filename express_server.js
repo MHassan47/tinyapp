@@ -53,6 +53,27 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  // const newPath = req.originalUrl.split("/:shortURL/delete")[1];
+  // res.redirect(newPath);
+  res.redirect("/urls");
+});
+
+app.get("/urls/:id", (req, res) => {
+  const templateVars = {
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id],
+  };
+  res.render("urls_show", templateVars);
+});
+app.post("/urls/:id", (req, res) => {
+  const longURL = req.body.longURL;
+  urlDatabase[req.params.id] = longURL;
+  console.log(req.params);
+  res.redirect("/urls");
+});
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
 
