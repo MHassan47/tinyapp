@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcryptjs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -46,14 +47,13 @@ const checkEmail = function (email) {
 
 const verifyUser = function (email, password) {
   const user = checkEmail(email);
-
-  if (user.password === password) {
+  if (bcrypt.compareSync(password, user.password)) {
     return user;
   }
   return false;
 };
 
-const userDatabase = function (userID, database) {
+const urlsForUser = function (userID, database) {
   let filtered = {};
   for (let urlID of Object.keys(database)) {
     if (database[urlID].userID === userID) {
@@ -80,7 +80,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]],
-    urls: userDatabase(req.cookies["user_id"], urlDatabase),
+    urls: urlsForUser(req.cookies["user_id"], urlDatabase),
   };
   console.log(urlDatabase);
   res.render("urls_index", templateVars);
@@ -178,11 +178,14 @@ app.post("/register", (req, res) => {
     return res.status(400).send("This email has already been registered");
   }
   const userRandomID = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10)
   users[userRandomID] = {
     id: userRandomID,
     email: req.body.email,
-    password: req.body.password,
+    password: hashedPassword,
   };
+  
+console.log(users[userRandomID].password);
 
   res.cookie("user_id", userRandomID);
   res.redirect("/urls");
