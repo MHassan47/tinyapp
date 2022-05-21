@@ -13,7 +13,7 @@ app.use(
     keys: ["user_id"],
   }))
 
-
+// Users database
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -28,9 +28,10 @@ const users = {
 };
 
 
-
+// URL database
 let urlDatabase = {};
 
+// homepage
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -43,6 +44,7 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+// Index page rendering
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
@@ -51,6 +53,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// Generating shortURLs for links
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
@@ -59,6 +62,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// New urls page rendering
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
@@ -66,6 +70,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+// Deleting a url from the user database
 app.post("/urls/:shortURL/delete", (req, res) => {
   const user_id = req.session.user_id
   const user = users[user_id]
@@ -76,6 +81,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
  res.redirect("/urls");
 });
 
+// Editing a long url 
 app.post("/urls/:id", (req, res) => {
   const longURL = req.body.longURL;
   urlDatabase[req.params.id] = {
@@ -85,6 +91,7 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+// redirecting to long url webpage
 app.get("/u/:shortURL", (req, res) => {
 if (!urlDatabase[req.params.shortURL]){
   return res.status(403).send("The short url does not exist")
@@ -92,6 +99,7 @@ if (!urlDatabase[req.params.shortURL]){
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
+
 
 app.get("/urls/:shortURL", (req, res) => {
   const user_id = req.session.user_id
@@ -111,6 +119,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// login page rendering
 app.get("/login", (req, res) => {
   const templateVars = {
     user: null,
@@ -118,6 +127,7 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars);
 });
 
+// login  logic
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const user = verifyUser(email, password, users);
@@ -132,11 +142,13 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+// logout  
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
+// registration page rendering
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
@@ -144,6 +156,7 @@ app.get("/register", (req, res) => {
   res.render("urls_registration", templateVars);
 });
 
+// registration logic
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!checkRegistration(email, password)) {
