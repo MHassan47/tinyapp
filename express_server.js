@@ -33,7 +33,11 @@ let urlDatabase = {};
 
 // homepage
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const templateVars = {
+    user: null,
+    urls: null
+  }
+  res.render("urls_index", templateVars);
 });
 
 app.get("/urls.json", (req, res) => {
@@ -46,8 +50,12 @@ app.get("/hello", (req, res) => {
 
 // Index page rendering
 app.get("/urls", (req, res) => {
+  const user = users[req.session.user_id]
+  if (!user) {
+    return res.status(403).send("Must login as a user")
+  }
   const templateVars = {
-    user: users[req.session.user_id],
+    user: user,
     urls: urlsForUser(req.session.user_id, urlDatabase),
   };
   res.render("urls_index", templateVars);
@@ -105,8 +113,11 @@ app.get("/urls/:shortURL", (req, res) => {
   const user_id = req.session.user_id
   const user = users[user_id]
   if (!user){
-    return res.redirect("/login")
+    return res.status(403).send("Must login to continue")
     
+  }
+  if (user_id !== urlDatabase[req.params.shortURL].userID){
+    return res.status(403).send("Url does not belong to user")
   }
   if (!urlDatabase[req.params.shortURL]){
     return res.status(403).send("The short url does not exist")
@@ -145,7 +156,7 @@ app.post("/login", (req, res) => {
 // logout  
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 // registration page rendering
