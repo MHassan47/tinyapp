@@ -40,13 +40,13 @@ function generateRandomString() {
 
 //   Generates a filtered url database for logged in user
   const urlsForUser = function (userID, database) {
-    let filtered = {};
+    let filtered = {}
     for (let urlID of Object.keys(database)) {
       if (database[urlID].userID === userID) {
         filtered[urlID] = database[urlID];
       }
-      return filtered;
     }
+    return filtered;
   };
 
 module.exports = { 
